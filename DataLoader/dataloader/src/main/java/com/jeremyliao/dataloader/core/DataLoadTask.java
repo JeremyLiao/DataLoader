@@ -3,27 +3,29 @@ package com.jeremyliao.dataloader.core;
 import android.arch.lifecycle.LifecycleOwner;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
+import android.support.annotation.MainThread;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.annotation.WorkerThread;
 
-import com.jeremyliao.dataloader.interfaces.ILoadListener;
-import com.jeremyliao.dataloader.interfaces.ILoadTask;
+import com.jeremyliao.dataloader.interfaces.LoadListener;
+import com.jeremyliao.dataloader.interfaces.LoadTask;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-class LiveDataWrapper<T> implements Runnable {
+class DataLoadTask<T> implements Runnable {
 
     final MutableLiveData<T> liveData = new MutableLiveData<>();
-    final ILoadTask<T> loadTask;
-    private Map<ILoadListener<T>, Observer<T>> listenerObserverMap = new ConcurrentHashMap<>();
+    final LoadTask<T> loadTask;
+    private Map<LoadListener<T>, Observer<T>> listenerObserverMap = new ConcurrentHashMap<>();
 
-    LiveDataWrapper(@NonNull ILoadTask<T> loadTask) {
+    DataLoadTask(@NonNull LoadTask<T> loadTask) {
         this.loadTask = loadTask;
     }
 
-    void addListener(@NonNull LifecycleOwner owner, @NonNull final ILoadListener<T> listener) {
+    @MainThread
+    void addListener(@NonNull LifecycleOwner owner, @NonNull final LoadListener<T> listener) {
         liveData.observe(owner, new Observer<T>() {
             @Override
             public void onChanged(@Nullable T t) {
@@ -32,7 +34,8 @@ class LiveDataWrapper<T> implements Runnable {
         });
     }
 
-    void addListener(@NonNull final ILoadListener<T> listener) {
+    @MainThread
+    void addListener(@NonNull final LoadListener<T> listener) {
         Observer<T> observer = new Observer<T>() {
             @Override
             public void onChanged(@Nullable T t) {
@@ -43,7 +46,8 @@ class LiveDataWrapper<T> implements Runnable {
         liveData.observeForever(observer);
     }
 
-    void removeListener(@NonNull final ILoadListener<T> listener) {
+    @MainThread
+    void removeListener(@NonNull final LoadListener<T> listener) {
         if (listenerObserverMap.containsKey(listener)) {
             Observer<T> observer = listenerObserverMap.remove(listener);
             liveData.removeObserver(observer);

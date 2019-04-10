@@ -1,6 +1,6 @@
 package com.jeremyliao.dataloader.interfaces;
 
-public interface ILoadListener<T> {
+public interface LoadListener<T> {
 
     void onDataArrived(T data);
 }

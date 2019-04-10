@@ -1,6 +1,6 @@
 package com.jeremyliao.dataloader.interfaces;
 
-public interface ILoadTask<T> {
+public interface LoadTask<T> {
 
     /**
      * loadData
