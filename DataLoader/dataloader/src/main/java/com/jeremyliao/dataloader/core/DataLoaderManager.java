@@ -98,6 +98,10 @@ public final class DataLoaderManager {
         return DEFAULT_EXECUTOR;
     }
 
+    public void setExecutor(ExecutorService executor) {
+        this.executor = executor;
+    }
+
     public boolean exists(int id) {
         return taskMap.containsKey(id);
     }
