@@ -1,1 +1,9 @@
-include ':app', ':dataloader-v1'
+include ':apps:app'
+include ':apps:demo'
+
+include ':dataloader-v1'
+
+include ':dataloader-v2:base'
+include ':dataloader-v2:compiler'
+include ':dataloader-v2:core'
+include ':dataloader-v2:loader-plugin'
