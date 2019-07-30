@@ -2,30 +2,26 @@ package com.jeremyliao.dataloader.core;
 
 import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MutableLiveData;
-import android.content.Context;
-import android.content.res.AssetManager;
-import android.os.SystemClock;
+import android.text.TextUtils;
 import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.jeremyliao.dataloader.base.common.LoaderInfo;
 import com.jeremyliao.dataloader.base.utils.EncryptUtils;
 import com.jeremyliao.dataloader.core.common.Const;
-import com.jeremyliao.dataloader.core.loader.BaseDataLoader;
 import com.jeremyliao.dataloader.core.loader.CallableDataLoader;
 import com.jeremyliao.dataloader.core.loader.LiveDataLoader;
 import com.jeremyliao.dataloader.core.source.DataSource;
-import com.jeremyliao.dataloader.core.utils.GenericsUtils;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -38,29 +34,59 @@ public class DataLoader {
     private static final String TAG = "DataLoader";
     private static final ExecutorService DEFAULT_EXECUTOR = Executors.newCachedThreadPool();
 
-    private static Map<String, String> loaderInfoMap;
+    private static Map<String, Map<String, Map<Integer, List<LoaderInfo>>>> loaderInfoMap = new HashMap<>();
     private static Map<String, Object> loaderInfoCache = new HashMap<>();
     private static Map<Class, Object> proxyCache = new HashMap<>();
     private static ExecutorService executor;
 
+    /**
+     * 初始化
+     */
     public static void init() {
         doInit();
     }
 
+    /**
+     * doInit
+     */
     private static void doInit() {
         try {
             Gson gson = new Gson();
             String json = (String) Class.forName(Const.SERVICE_LOADER_INIT)
                     .getMethod(Const.INIT_METHOD)
                     .invoke(null);
-            Type type = new TypeToken<Map<String, String>>() {
+            Type type = new TypeToken<List<LoaderInfo>>() {
             }.getType();
-            loaderInfoMap = gson.fromJson(json, type);
+            List<LoaderInfo> loaderInfos = gson.fromJson(json, type);
+            if (loaderInfos != null && loaderInfos.size() > 0) {
+                for (LoaderInfo loaderInfo : loaderInfos) {
+                    if (!loaderInfoMap.containsKey(loaderInfo.targetClass)) {
+                        loaderInfoMap.put(loaderInfo.targetClass, new HashMap<String, Map<Integer, List<LoaderInfo>>>());
+                    }
+                    Map<String, Map<Integer, List<LoaderInfo>>> subMap = loaderInfoMap.get(loaderInfo.targetClass);
+                    if (!subMap.containsKey(loaderInfo.method)) {
+                        subMap.put(loaderInfo.method, new HashMap<Integer, List<LoaderInfo>>());
+                    }
+                    Map<Integer, List<LoaderInfo>> subSubMap = subMap.get(loaderInfo.method);
+                    int paramSize = loaderInfo.paramTypes == null ? 0 : loaderInfo.paramTypes.length;
+                    if (!subSubMap.containsKey(paramSize)) {
+                        subSubMap.put(paramSize, new ArrayList<LoaderInfo>());
+                    }
+                    subSubMap.get(paramSize).add(loaderInfo);
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * 获取代理
+     *
+     * @param type
+     * @param <T>
+     * @return
+     */
     public static <T> T get(Class<T> type) {
         if (proxyCache.containsKey(type)) {
             return (T) proxyCache.get(type);
@@ -83,6 +109,9 @@ public class DataLoader {
         DataLoader.executor = executor;
     }
 
+    /**
+     * 动态代理handler
+     */
     private static class InterfaceHandler implements InvocationHandler {
 
         private final Class interfaceType;
@@ -93,38 +122,67 @@ public class DataLoader {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            Log.d(TAG, "method: " + method);
-            String key = getKey(method);
-            Log.d(TAG, "key: " + key);
-            Log.d(TAG, "loaderInfoCache: " + loaderInfoCache);
-            Log.d(TAG, "loaderInfoMap: " + loaderInfoMap);
-            if (!loaderInfoCache.containsKey(key)) {
-                if (loaderInfoMap.containsKey(key)) {
-                    String loaderClassName = loaderInfoMap.get(key);
-                    Class loaderClass = Class.forName(loaderClassName);
+            DefaultDataSource dataSource = new DefaultDataSource();
+            try {
+                LoaderInfo loaderInfo = getLoaderInfo(method);
+                if (!loaderInfoCache.containsKey(loaderInfo.loaderClass)) {
+                    Class loaderClass = Class.forName(loaderInfo.loaderClass);
                     Object loaderInstance = loaderClass.newInstance();
-                    loaderInfoCache.put(key, loaderInstance);
+                    loaderInfoCache.put(loaderInfo.loaderClass, loaderInstance);
+                }
+                Object loaderInstance = loaderInfoCache.get(loaderInfo.loaderClass);
+                if (loaderInstance instanceof CallableDataLoader) {
+                    DataLoadTask task = new DataLoadTask(dataSource, loaderInstance, args);
+                    getExecutor().execute(task);
+                } else if (loaderInstance instanceof LiveDataLoader) {
+                    processLoad(dataSource, loaderInstance, args);
+                }
+                return dataSource;
+            } catch (Exception e) {
+                dataSource.error.postValue(e);
+            }
+            return dataSource;
+        }
+
+        private LoaderInfo getLoaderInfo(Method method) {
+            List<LoaderInfo> loaderInfos = loaderInfoMap
+                    .get(interfaceType.getCanonicalName())
+                    .get(method.getName())
+                    .get(method.getParameterTypes().length);
+            if (loaderInfos.size() == 1) {
+                return loaderInfos.get(0);
+            }
+            for (LoaderInfo loaderInfo : loaderInfos) {
+                if (match(loaderInfo, method)) {
+                    return loaderInfo;
                 }
             }
-            Object loaderInstance = loaderInfoCache.get(key);
-            if (loaderInstance == null) {
-                return null;
-            }
-            if (!(loaderInstance instanceof BaseDataLoader)) {
-                return null;
-            }
-
-            if (loaderInstance instanceof CallableDataLoader) {
-                DefaultDataSource dataSource = new DefaultDataSource();
-                DataLoadTask task = new DataLoadTask(dataSource, loaderInstance, args);
-                getExecutor().execute(task);
-                return dataSource;
-            } else if (loaderInstance instanceof LiveDataLoader) {
-                DefaultDataSource dataSource = new DefaultDataSource();
-                processLoad(dataSource, loaderInstance, args);
-                return dataSource;
-            }
             return null;
+        }
+
+        private boolean match(LoaderInfo loaderInfo, Method method) {
+            if (!TextUtils.equals(loaderInfo.loaderClass, interfaceType.getCanonicalName())) {
+                return false;
+            }
+            if (!TextUtils.equals(loaderInfo.method, method.getName())) {
+                return false;
+            }
+            Class<?>[] parameterTypes = method.getParameterTypes();
+            int paramSize1 = loaderInfo.paramTypes != null ? loaderInfo.paramTypes.length : 0;
+            int paramSize2 = parameterTypes.length;
+            if (paramSize1 != paramSize2) {
+                return false;
+            }
+            if (paramSize1 > 0) {
+                for (int i = 0; i < paramSize1; i++) {
+                    String paramType = loaderInfo.paramTypes[i];
+                    String name = parameterTypes[i].getCanonicalName();
+                    if (!paramType.equals(name)) {
+                        return false;
+                    }
+                }
+            }
+            return true;
         }
 
         private String getKey(Method method) {
@@ -142,6 +200,13 @@ public class DataLoader {
             return EncryptUtils.encryptMD5ToString(feature);
         }
 
+        /**
+         * 对于LiveDataLoader，用反射的方式调用实际的loader
+         *
+         * @param dataSource
+         * @param loaderInstance
+         * @param args
+         */
         private void processLoad(DefaultDataSource dataSource, Object loaderInstance, Object[] args) {
             Method[] methods = loaderInstance.getClass().getMethods();
             if (methods.length > 0) {
@@ -158,15 +223,26 @@ public class DataLoader {
                             }
                             method.invoke(loaderInstance, args);
                         } catch (Exception e) {
+                            if (e instanceof InvocationTargetException) {
+                                Throwable targetException = ((InvocationTargetException) e).getTargetException();
+                                if (targetException != null) {
+                                    dataSource.error.postValue(targetException);
+                                    return;
+                                }
+                            }
                             dataSource.error.postValue(e);
                         }
-
                     }
                 }
             }
         }
     }
 
+    /**
+     * DataLoadTask，对应CallableDataLoader的方式
+     *
+     * @param <T>
+     */
     private static class DataLoadTask<T> implements Runnable {
 
         final DefaultDataSource<T> dataSource;
@@ -190,9 +266,15 @@ public class DataLoader {
                                 Object result = method.invoke(loaderInstance, args);
                                 dataSource.result.postValue((T) result);
                             } catch (Exception e) {
+                                if (e instanceof InvocationTargetException) {
+                                    Throwable targetException = ((InvocationTargetException) e).getTargetException();
+                                    if (targetException != null) {
+                                        dataSource.error.postValue(targetException);
+                                        return;
+                                    }
+                                }
                                 dataSource.error.postValue(e);
                             }
-
                         }
                     }
                 }
@@ -200,6 +282,11 @@ public class DataLoader {
         }
     }
 
+    /**
+     * DefaultDataSource，采用MutableLiveData实现
+     *
+     * @param <T>
+     */
     private static class DefaultDataSource<T> implements DataSource<T> {
 
         private final MutableLiveData<T> result = new MutableLiveData<>();
@@ -215,5 +302,4 @@ public class DataLoader {
             return error;
         }
     }
-
 }

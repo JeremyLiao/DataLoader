@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.jeremyliao.dataloader.plugin.common.Const;
+import com.jeremyliao.dataloader.plugin.common.LoaderInfo;
 import com.jeremyliao.dataloader.plugin.utils.GradleUtils;
 
 import org.gradle.api.Project;
@@ -28,8 +29,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.jar.JarEntry;
@@ -80,7 +83,7 @@ public class DataLoaderTransform extends Transform {
     }
 
     private void process(TransformInvocation transformInvocation) throws IOException {
-        Map<String, String> loaderInfoMap = new HashMap<>();
+        List<LoaderInfo> loaderInfoList = new ArrayList<>();
         for (TransformInput input : transformInvocation.getInputs()) {
             for (JarInput jarInput : input.getJarInputs()) {
                 File file = jarInput.getFile();
@@ -92,17 +95,17 @@ public class DataLoaderTransform extends Transform {
                         System.out.println(TAG + "entry name: " + entry.getName());
                         String content = GradleUtils.getContent(jarFile, entry);
                         System.out.println(TAG + "content: " + content);
-                        Type type = new TypeToken<Map<String, String>>() {
+                        Type type = new TypeToken<List<LoaderInfo>>() {
                         }.getType();
-                        Map<String, String> map = gson.fromJson(content, type);
-                        if (map != null) {
-                            loaderInfoMap.putAll(map);
+                        List<LoaderInfo> loaderInfos = gson.fromJson(content, type);
+                        if (loaderInfos != null) {
+                            loaderInfoList.addAll(loaderInfos);
                         }
                     }
                 }
             }
         }
-        String json = gson.toJson(loaderInfoMap);
+        String json = gson.toJson(loaderInfoList);
         generateInitClass(transformInvocation, json);
     }
 

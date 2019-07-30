@@ -1,4 +1,4 @@
-package com.jeremyliao.dataloader.compiler.processor.bean;
+package com.jeremyliao.dataloader.plugin.common;
 
 /**
  * Created by liaohailiang on 2019-07-19.

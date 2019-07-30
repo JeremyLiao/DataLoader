@@ -3,9 +3,9 @@ package com.jeremyliao.dataloader.compiler.processor;
 import com.google.auto.service.AutoService;
 import com.google.gson.Gson;
 import com.jeremyliao.dataloader.base.annotation.DataLoad;
+import com.jeremyliao.dataloader.base.common.LoaderInfo;
 import com.jeremyliao.dataloader.base.utils.EncryptUtils;
 import com.jeremyliao.dataloader.compiler.processor.base.LoaderType;
-import com.jeremyliao.dataloader.compiler.processor.bean.LoaderInfo;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.JavaFile;
 import com.squareup.javapoet.MethodSpec;
@@ -63,7 +63,7 @@ public class DataLoaderProcessor extends AbstractProcessor {
     Elements elements;
 
     Gson gson = new Gson();
-    Map<String, List<LoaderInfo>> loaderInfoMap = new HashMap<>();
+    List<LoaderInfo> loaderInfos = new ArrayList<>();
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
@@ -96,7 +96,7 @@ public class DataLoaderProcessor extends AbstractProcessor {
     private void processAnnotations(RoundEnvironment roundEnvironment) {
         Set<? extends Element> elements = roundEnvironment.getElementsAnnotatedWith(DataLoad.class);
         if (elements != null && elements.size() > 0) {
-            loaderInfoMap.clear();
+            loaderInfos.clear();
             for (Element element : elements) {
                 if (element.getKind() == ElementKind.CLASS) {
                     TypeElement typeElement = (TypeElement) element;
@@ -124,10 +124,7 @@ public class DataLoaderProcessor extends AbstractProcessor {
                             }
                         }
                     }
-                    if (!loaderInfoMap.containsKey(loaderInfo.targetClass)) {
-                        loaderInfoMap.put(loaderInfo.targetClass, new ArrayList<>());
-                    }
-                    loaderInfoMap.get(loaderInfo.targetClass).add(loaderInfo);
+                    loaderInfos.add(loaderInfo);
                     System.out.println(TAG + "loaderInfo: " + loaderInfo);
                 }
             }
@@ -177,8 +174,15 @@ public class DataLoaderProcessor extends AbstractProcessor {
     }
 
     private void generateInterfaceClass() {
-        if (loaderInfoMap.size() == 0) {
+        if (loaderInfos.size() == 0) {
             return;
+        }
+        Map<String, List<LoaderInfo>> loaderInfoMap = new HashMap<>();
+        for (LoaderInfo loaderInfo : loaderInfos) {
+            if (!loaderInfoMap.containsKey(loaderInfo.targetClass)) {
+                loaderInfoMap.put(loaderInfo.targetClass, new ArrayList<>());
+            }
+            loaderInfoMap.get(loaderInfo.targetClass).add(loaderInfo);
         }
         for (Map.Entry<String, List<LoaderInfo>> entry : loaderInfoMap.entrySet()) {
             String targetClassName = entry.getKey();
@@ -232,17 +236,10 @@ public class DataLoaderProcessor extends AbstractProcessor {
     }
 
     private void generateOutput() {
-        if (loaderInfoMap.size() == 0) {
+        if (loaderInfos.size() == 0) {
             return;
         }
-        Map<String, String> outputMap = new HashMap<>();
-        for (List<LoaderInfo> loaderInfos : loaderInfoMap.values()) {
-            for (LoaderInfo loaderInfo : loaderInfos) {
-                String key = getKey(loaderInfo);
-                outputMap.put(key, loaderInfo.loaderClass);
-            }
-        }
-        writeToFile(OUTPUT_PATH + System.currentTimeMillis(), gson.toJson(outputMap));
+        writeToFile(OUTPUT_PATH + System.currentTimeMillis(), gson.toJson(loaderInfos));
     }
 
     private String getKey(LoaderInfo loaderInfo) {
