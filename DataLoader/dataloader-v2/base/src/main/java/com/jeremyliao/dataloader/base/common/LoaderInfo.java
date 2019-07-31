@@ -11,6 +11,8 @@ public class LoaderInfo {
 
     public String loaderClass;
 
+    public String loaderInterface;
+
     public String returnType;
 
     public String[] paramTypes;
@@ -21,6 +23,7 @@ public class LoaderInfo {
         sb.append("method: ").append(method).append(";");
         sb.append("targetClass: ").append(targetClass).append(";");
         sb.append("loaderClass: ").append(loaderClass).append(";");
+        sb.append("loaderInterface: ").append(loaderInterface).append(";");
         sb.append("returnType: ").append(returnType).append(";");
         sb.append("paramTypes: ").append(paramTypes).append(";");
         return sb.toString();

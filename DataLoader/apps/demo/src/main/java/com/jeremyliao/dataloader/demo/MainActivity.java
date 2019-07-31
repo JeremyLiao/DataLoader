@@ -9,7 +9,6 @@ import android.widget.Toast;
 
 import com.jeremyliao.dataloader.core.DataLoader;
 import com.jeremyliao.dataloader.core.source.DataSource;
-import com.jeremyliao.dataloader.core.utils.GenericsUtils;
 import com.jeremyliao.dataloader.demo.bean.CommonParam;
 import com.jeremyliao.dataloader.demo.bean.CommonResult;
 import com.jeremyliao.dataloader.demo.bean.DemoParam;
@@ -25,8 +24,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData1(View view) {
-        CommonParam<String> param = new CommonParam<>();
-        Class superClassGenericType = GenericsUtils.getGenericType(param.getClass());
         DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData1("hello world");
         dataSource.result().observe(this, new Observer<String>() {
             @Override
@@ -69,6 +66,200 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onChanged(@Nullable CommonResult<String> result) {
                 Toast.makeText(MainActivity.this, result.data, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData4(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData4("aaaaa");
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String s) {
+                Toast.makeText(MainActivity.this, s, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData5(View view) {
+        CommonParam<String> param = new CommonParam<>();
+        param.param = "aaaaa";
+        DataSource<CommonResult<String>> dataSource = DataLoader.get(DemoDataSource.class).getData5(param);
+        dataSource.result().observe(this, new Observer<CommonResult<String>>() {
+            @Override
+            public void onChanged(@Nullable CommonResult<String> result) {
+                Toast.makeText(MainActivity.this, result.data, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData6(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData6();
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData7(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData7("a", "b");
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData8(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData8("a", "b", "c");
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData9(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData9("a", "b", "c", "d");
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData10(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData10("a", "b");
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData11(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData11();
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData12(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData12("a", "b");
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData13(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData13("a", "b", "c");
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData14(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData14("a", "b", "c", "d");
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
+            }
+        });
+        dataSource.error().observe(this, new Observer<Throwable>() {
+            @Override
+            public void onChanged(@Nullable Throwable throwable) {
+                Toast.makeText(MainActivity.this, throwable.toString(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    public void testLoadData15(View view) {
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData15();
+        dataSource.result().observe(this, new Observer<String>() {
+            @Override
+            public void onChanged(@Nullable String result) {
+                Toast.makeText(MainActivity.this, result, Toast.LENGTH_SHORT).show();
             }
         });
         dataSource.error().observe(this, new Observer<Throwable>() {

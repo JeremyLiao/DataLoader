@@ -11,7 +11,6 @@ public class DataLoadDemo1 implements CallableDataLoader1<String, String> {
 
     @Override
     public String call(String param) throws Exception {
-        Thread.sleep(1000);
         return "DataLoadDemo1 called with param: " + param;
     }
 }

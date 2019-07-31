@@ -13,7 +13,6 @@ public class DataLoadDemo2 implements CallableDataLoader1<DemoParam, DemoResult>
 
     @Override
     public DemoResult call(DemoParam param) throws Exception {
-        Thread.sleep(1000);
         DemoResult result = new DemoResult();
         result.name = param.name;
         result.no = param.no;

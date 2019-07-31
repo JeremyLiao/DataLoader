@@ -38,4 +38,8 @@ dependencies {
     implementation project(':dataloader-v2:base')
     annotationProcessor project(':dataloader-v2:compiler')
     implementation project(':dataloader-v2:core')
+
+    //rxjava2
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.6'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
 }

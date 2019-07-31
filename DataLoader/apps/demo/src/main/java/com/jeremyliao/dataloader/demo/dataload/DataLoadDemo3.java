@@ -13,7 +13,6 @@ public class DataLoadDemo3 implements CallableDataLoader1<CommonParam<String>, C
 
     @Override
     public CommonResult<String> call(CommonParam<String> param) throws Exception {
-        Thread.sleep(1000);
         CommonResult<String> result = new CommonResult<>();
         result.data = "DataLoadDemo3 called with param: " + param.param;
         return result;

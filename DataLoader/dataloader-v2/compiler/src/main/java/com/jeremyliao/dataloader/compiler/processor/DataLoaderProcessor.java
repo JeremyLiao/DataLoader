@@ -108,17 +108,20 @@ public class DataLoaderProcessor extends AbstractProcessor {
                         Element interfaceElement = asElement(anInterface);
                         if (interfaceElement instanceof TypeElement) {
                             if (isFromInterface((TypeElement) interfaceElement, LoaderType.DATA_LOADER_TYPE)) {
-                                if (anInterface instanceof Type.ClassType) {
-                                    Type.ClassType classType = (Type.ClassType) anInterface;
-                                    if (classType.typarams_field != null && classType.typarams_field.size() > 0) {
-                                        int size = classType.typarams_field.size();
-                                        loaderInfo.returnType = classType.typarams_field.get(size - 1).toString();
-                                        if (size > 1) {
-                                            loaderInfo.paramTypes = new String[size - 1];
-                                            for (int i = 0; i < size - 1; i++) {
-                                                loaderInfo.paramTypes[i] = classType.typarams_field.get(i).toString();
-                                            }
+                                loaderInfo.loaderInterface = interfaceElement.toString();
+                                Type.ClassType classType = (Type.ClassType) anInterface;
+                                if (classType.typarams_field != null && classType.typarams_field.size() > 0) {
+                                    int size = classType.typarams_field.size();
+                                    loaderInfo.returnType = classType.typarams_field.get(size - 1).toString();
+                                    if (size > 1) {
+                                        loaderInfo.paramTypes = new String[size - 1];
+                                        for (int i = 0; i < size - 1; i++) {
+                                            loaderInfo.paramTypes[i] = classType.typarams_field.get(i).toString();
                                         }
+                                    } else if (LoaderType.LIVE_DATA_LOADER_TYPE_N.equals(loaderInfo.loaderInterface) ||
+                                            LoaderType.CALLABLE_DATA_LOADER_TYPE_N.equals(loaderInfo.loaderInterface)) {
+                                        loaderInfo.paramTypes = new String[1];
+                                        loaderInfo.paramTypes[0] = Object[].class.getCanonicalName();
                                     }
                                 }
                             }
@@ -201,7 +204,10 @@ public class DataLoaderProcessor extends AbstractProcessor {
                 TypeName returnType = ParameterizedTypeName.get(baseClassName, getTypeName(loaderInfo.returnType));
                 methodBuilder.returns(returnType);
                 //添加参数
-                if (loaderInfo.paramTypes != null && loaderInfo.paramTypes.length > 0) {
+                if (LoaderType.LIVE_DATA_LOADER_TYPE_N.equals(loaderInfo.loaderInterface) ||
+                        LoaderType.CALLABLE_DATA_LOADER_TYPE_N.equals(loaderInfo.loaderInterface)) {
+                    methodBuilder.addParameter(Object[].class, "params").varargs();
+                } else if (loaderInfo.paramTypes != null && loaderInfo.paramTypes.length > 0) {
                     for (int i = 0; i < loaderInfo.paramTypes.length; i++) {
                         String paramType = loaderInfo.paramTypes[i];
                         methodBuilder.addParameter(getTypeName(paramType), "param" + (i + 1));

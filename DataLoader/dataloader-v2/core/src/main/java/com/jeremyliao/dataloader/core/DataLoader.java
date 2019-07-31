@@ -10,6 +10,7 @@ import com.google.gson.reflect.TypeToken;
 import com.jeremyliao.dataloader.base.common.LoaderInfo;
 import com.jeremyliao.dataloader.base.utils.EncryptUtils;
 import com.jeremyliao.dataloader.core.common.Const;
+import com.jeremyliao.dataloader.core.helper.LoaderInfoHelper;
 import com.jeremyliao.dataloader.core.loader.CallableDataLoader;
 import com.jeremyliao.dataloader.core.loader.LiveDataLoader;
 import com.jeremyliao.dataloader.core.source.DataSource;
@@ -52,9 +53,7 @@ public class DataLoader {
     private static void doInit() {
         try {
             Gson gson = new Gson();
-            String json = (String) Class.forName(Const.SERVICE_LOADER_INIT)
-                    .getMethod(Const.INIT_METHOD)
-                    .invoke(null);
+            String json = LoaderInfoHelper.getLoaderInfoJson();
             Type type = new TypeToken<List<LoaderInfo>>() {
             }.getType();
             List<LoaderInfo> loaderInfos = gson.fromJson(json, type);
@@ -79,6 +78,7 @@ public class DataLoader {
             e.printStackTrace();
         }
     }
+
 
     /**
      * 获取代理
@@ -145,6 +145,7 @@ public class DataLoader {
         }
 
         private LoaderInfo getLoaderInfo(Method method) {
+            Log.d(TAG, "method.getParameterTypes().length: " + method.getParameterTypes().length);
             List<LoaderInfo> loaderInfos = loaderInfoMap
                     .get(interfaceType.getCanonicalName())
                     .get(method.getName())
@@ -221,7 +222,7 @@ public class DataLoader {
                                     params[i] = args[i - 1];
                                 }
                             }
-                            method.invoke(loaderInstance, args);
+                            method.invoke(loaderInstance, params);
                         } catch (Exception e) {
                             if (e instanceof InvocationTargetException) {
                                 Throwable targetException = ((InvocationTargetException) e).getTargetException();
@@ -266,6 +267,7 @@ public class DataLoader {
                                 Object result = method.invoke(loaderInstance, args);
                                 dataSource.result.postValue((T) result);
                             } catch (Exception e) {
+                                e.printStackTrace();
                                 if (e instanceof InvocationTargetException) {
                                     Throwable targetException = ((InvocationTargetException) e).getTargetException();
                                     if (targetException != null) {
