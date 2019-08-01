@@ -17,6 +17,8 @@ import com.jeremyliao.dataloader.demo.dataload.DemoDataSource;
 
 public class MainActivity extends AppCompatActivity {
 
+    private static final String[] COMMON_PARAMS = {"a", "b", "c", "d", "e", "f", "g", "h", "i", "j"};
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -24,7 +26,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData1(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData1("hello world");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData1(COMMON_PARAMS[0]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
@@ -41,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void testLoadData2(View view) {
         DemoParam param = new DemoParam();
-        param.name = "aaaaa";
+        param.name = COMMON_PARAMS[0];
         param.no = 100;
         DataSource<DemoResult> dataSource = DataLoader.get(DemoDataSource.class).getData2(param);
         dataSource.result().observe(this, new Observer<DemoResult>() {
@@ -60,7 +62,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void testLoadData3(View view) {
         CommonParam<String> param = new CommonParam<>();
-        param.param = "aaaaa";
+        param.param = COMMON_PARAMS[0];
         DataSource<CommonResult<String>> dataSource = DataLoader.get(DemoDataSource.class).getData3(param);
         dataSource.result().observe(this, new Observer<CommonResult<String>>() {
             @Override
@@ -77,7 +79,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData4(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData4("aaaaa");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData4(COMMON_PARAMS[0]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void testLoadData5(View view) {
         CommonParam<String> param = new CommonParam<>();
-        param.param = "aaaaa";
+        param.param = COMMON_PARAMS[0];
         DataSource<CommonResult<String>> dataSource = DataLoader.get(DemoDataSource.class).getData5(param);
         dataSource.result().observe(this, new Observer<CommonResult<String>>() {
             @Override
@@ -127,7 +129,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData7(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData7("a", "b");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData7(COMMON_PARAMS[0], COMMON_PARAMS[1]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String result) {
@@ -143,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData8(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData8("a", "b", "c");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData8(COMMON_PARAMS[0], COMMON_PARAMS[1], COMMON_PARAMS[2]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String result) {
@@ -159,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData9(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData9("a", "b", "c", "d");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData9(COMMON_PARAMS[0], COMMON_PARAMS[1], COMMON_PARAMS[2], COMMON_PARAMS[3]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String result) {
@@ -175,7 +177,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData10(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData10("a", "b");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData10(COMMON_PARAMS[0], COMMON_PARAMS[1]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String result) {
@@ -207,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData12(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData12("a", "b");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData12(COMMON_PARAMS[0], COMMON_PARAMS[1]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String result) {
@@ -223,7 +225,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData13(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData13("a", "b", "c");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData13(COMMON_PARAMS[0], COMMON_PARAMS[1], COMMON_PARAMS[2]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String result) {
@@ -239,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void testLoadData14(View view) {
-        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData14("a", "b", "c", "d");
+        DataSource<String> dataSource = DataLoader.get(DemoDataSource.class).getData14(COMMON_PARAMS[0], COMMON_PARAMS[1], COMMON_PARAMS[2], COMMON_PARAMS[3]);
         dataSource.result().observe(this, new Observer<String>() {
             @Override
             public void onChanged(@Nullable String result) {
