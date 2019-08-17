@@ -35,9 +35,12 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
 
 
-    implementation project(':dataloader-v2:base')
-    annotationProcessor project(':dataloader-v2:compiler')
-    implementation project(':dataloader-v2:core')
+//    implementation project(':dataloader-v2:base')
+//    annotationProcessor project(':dataloader-v2:compiler')
+//    implementation project(':dataloader-v2:core')
+
+    implementation 'com.jeremyliao:data-loader2-core:2.0.0'
+    annotationProcessor 'com.jeremyliao:data-loader2-compiler:2.0.0'
 
     //rxjava2
     implementation 'io.reactivex.rxjava2:rxjava:2.2.6'
