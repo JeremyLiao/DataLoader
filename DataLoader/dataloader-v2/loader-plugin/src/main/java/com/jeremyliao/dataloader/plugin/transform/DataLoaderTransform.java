@@ -17,8 +17,12 @@ import com.google.gson.reflect.TypeToken;
 import com.jeremyliao.dataloader.plugin.common.Const;
 import com.jeremyliao.dataloader.plugin.common.LoaderInfo;
 import com.jeremyliao.dataloader.plugin.utils.GradleUtils;
+import com.jeremyliao.dataloader.plugin.utils.ModifyUtils;
 
+import org.apache.commons.io.IOUtils;
+import org.codehaus.groovy.ast.tools.GenericsUtils;
 import org.gradle.api.Project;
+import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -27,6 +31,7 @@ import org.objectweb.asm.Opcodes;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -141,8 +146,74 @@ public class DataLoaderTransform extends Transform {
                 String destName = jarInput.getName();
                 File dest = transformInvocation.getOutputProvider().getContentLocation(destName,
                         jarInput.getContentTypes(), jarInput.getScopes(), Format.JAR);
-                FileUtils.copyFile(jarInput.getFile(), dest);
+                File file = jarInput.getFile();
+                File modifyJarFile = ModifyUtils.replaceInJar(transformInvocation, file);
+                if (modifyJarFile == null) {
+                    modifyJarFile = jarInput.getFile();
+                } else {
+                    saveModifiedJarForCheck(modifyJarFile, jarInput.getFile());
+                }
+//                JarFile jarFile = new JarFile(file);
+//                Enumeration<JarEntry> entries = jarFile.entries();
+//                while (entries.hasMoreElements()) {
+//                    JarEntry entry = entries.nextElement();
+//                    if ("com/jeremyliao/dataloader/core/utils/GenericsUtils.class".equals(entry.getName())) {
+//                        System.out.println(TAG + "testModifyClass");
+//                        System.out.println(TAG + "entry: " + entry.getName());
+//                        System.out.println(TAG + "jarFile: " + jarFile.getName());
+//                        System.out.println(TAG + "file: " + file.getAbsolutePath());
+//                        InputStream inputStream = jarFile.getInputStream(entry);
+//                        byte[] sourceClassBytes = IOUtils.toByteArray(inputStream);
+//                        System.out.println(TAG + "sourceClassBytes");
+//                        System.out.println(TAG + new String(sourceClassBytes));
+//                        ClassReader cr = new ClassReader(sourceClassBytes);
+//                        ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+//                        cr.accept(cw, 0);
+//                        {
+//                            MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
+//                                    Const.INIT_METHOD, "()Ljava/lang/String;", null, null);
+//                            mv.visitCode();
+//                            mv.visitInsn(Opcodes.ARETURN);
+//                            mv.visitMaxs(1, 0);
+//                            mv.visitEnd();
+//                        }
+//                        cw.visitEnd();
+//                        System.out.println(TAG + "destClassBytes");
+//                        System.out.println(TAG + new String(cw.toByteArray()));
+////                        testModifyClass(transformInvocation);
+//                    }
+//                }
+                FileUtils.copyFile(modifyJarFile, dest);
             }
+        }
+    }
+
+    private static void saveModifiedJarForCheck(File newFile, File oldFile) throws IOException {
+        if (oldFile.exists()) {
+            oldFile.delete();
+        }
+        FileUtils.copyFile(newFile, oldFile);
+    }
+
+    private void testModifyClass(TransformInvocation transformInvocation) {
+        try {
+            ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES | ClassWriter.COMPUTE_MAXS);
+            cw.visit(Opcodes.V1_7, Opcodes.ACC_PUBLIC,
+                    "com.jeremyliao.dataloader.core.utils.GenericsUtils".replace('.', '/'),
+                    null, "java/lang/Object", null);
+            {
+                MethodVisitor mv = cw.visitMethod(Opcodes.ACC_PUBLIC + Opcodes.ACC_STATIC,
+                        Const.INIT_METHOD, "()Ljava/lang/String;", null, null);
+                mv.visitCode();
+                mv.visitInsn(Opcodes.ARETURN);
+                mv.visitMaxs(1, 0);
+                mv.visitEnd();
+            }
+            cw.visitEnd();
+            System.out.println(TAG + "code");
+            System.out.println(TAG + "code: " + new String(cw.toByteArray()));
+        } catch (Exception e) {
+
         }
     }
 

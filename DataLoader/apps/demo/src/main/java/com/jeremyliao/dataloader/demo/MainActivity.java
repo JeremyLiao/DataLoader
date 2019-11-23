@@ -9,6 +9,7 @@ import android.widget.Toast;
 
 import com.jeremyliao.dataloader.core.DataLoader;
 import com.jeremyliao.dataloader.core.source.DataSource;
+import com.jeremyliao.dataloader.core.utils.GenericsUtils;
 import com.jeremyliao.dataloader.demo.bean.CommonParam;
 import com.jeremyliao.dataloader.demo.bean.CommonResult;
 import com.jeremyliao.dataloader.demo.bean.DemoParam;
